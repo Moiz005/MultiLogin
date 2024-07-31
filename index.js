@@ -6,12 +6,13 @@ import { Strategy } from "passport-local";
 import session from "express-session";
 import bcrypt from 'bcrypt'
 import env from "dotenv";
+// import { createClient } from '@supabase/supabase-js'
 
 env.config();
 
 const app = express();
 const port = 3000;
-const saltRounds = process.env.SALT_ROUNDS;
+const saltRounds = parseInt(process.env.SALT_ROUNDS, 10);
 
 app.use(
     session({
@@ -28,12 +29,11 @@ app.use(express.static("public"));
 app.use(passport.initialize());
 app.use(passport.session());
 
+const connectionString = process.env.SUPABASE_URL;
+
 const db = new pg.Client({
-    user: process.env.USER,
-    host: process.env.HOST,
-    database: process.env.DATABASE,
-    password: process.env.PASSWORD,
-    port: process.env.PORT
+    connectionString,
+    ssl: false
 });
 db.connect();
 
@@ -73,7 +73,7 @@ app.get('/login', (req, res)=>{
     }
 });
 
-app.get('/register', (req, res)=>{
+app.get('/register', async(req, res)=>{
     res.render('register.ejs');
 });
 
